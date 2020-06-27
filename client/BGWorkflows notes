@@ -1,0 +1,54 @@
+Monitor User Bottles:
+    Basically monitor user removable bottles, and raises the events below.
+    
+Monitor Haz Bottle
+    EVENT_HAZ_WASTE_BOTTLE_REMOVED = 21880
+    EVENT_HAZ_WASTE_BOTTLE_REPLACED = 21883
+    EVENT_HAZ_WASTE_BOTTLE_FULL = 21887
+
+Monitor Standard Bottle
+    EVENT_STD_WASTE_BOTTLE_REMOVED = 21881
+    EVENT_STD_WASTE_BOTTLE_REPLACED = 21884
+    EVENT_STD_WASTE_BOTTLE_FULL = 21888
+
+Monitor DI Bottles
+    EVENT_DI_SUPPLY_BOTTLE_REMOVED = 21882
+    EVENT_DI_SUPPLY_BOTTLE_REPLACED = 21885
+    EVENT_DI_SUPPLY_BOTTLE_EMPTY = 21886
+
+    if EVENT_DI_SUPPLY_BOTTLE_REMOVED then DI Transfer is disabled
+
+Questions:
+    haz_waste_bottle_full, std_waste_bottle_full, ext_di_bottle_empty seems to be set, but no one's using it.
+
+BW Mix and Fill DI
+    - Assess conditions every 1 second
+
+    1. BW Mix
+
+    2. DI Fill
+        - If DI Bottle was removed, DI Fill will not be done
+        - DI Fill will be done until pressure is achieved.
+        
+Waste Transfer
+
+- Runs every second
+    - First get the tank volumes
+    - Checks are done
+        (A) Bottle is not removed -> This is from Monitor User Bottles workflow signalling transfer waste
+        (B) Door is not open
+        (C) Scavenge Vacuum is not too high or low
+        (D) External Bottle is not too high or Internal Bottle is not too low
+    - If any of the above checks are true, just shut off the Valve
+    - Otherwise, do the transfer if the volume if the internal tank reaches a threshold by turning on the valve
+    - Other checks are done while transfer is happening:
+        - After 20 sec of turning on the valve, BG workflow will:
+            - Compare the new volume with the original volume above
+           
+
+- If ext tank difference is less than 80% of difference in difference in internal tanks, raise below alarm and turn off BG workflow
+                - If we have done a successful transfer before => report leakage (21870)
+                - if we have not done a successful transfer yet => report incorrect piping (21872)
+            - If ext tank difference is less than 50ml, raise below alarm and turn off BG workflow
+                - If we have done a successful transfer before => report inefficient (21871)
+                - if we have not done a successful transfer yet => report incorrect piping (21872)
